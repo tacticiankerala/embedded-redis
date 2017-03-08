@@ -44,6 +44,11 @@ public class RedisServer extends AbstractRedisInstance {
         this.args = new ArrayList<String>(args);
     }
 
+    RedisServer(List<String> args, int port, File logfile) {
+        super(port, logfile);
+        this.args = new ArrayList<String>(args);
+    }
+
     public static RedisServerBuilder builder() {
         return new RedisServerBuilder();
     }

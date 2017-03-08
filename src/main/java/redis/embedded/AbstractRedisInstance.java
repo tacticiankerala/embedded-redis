@@ -1,26 +1,38 @@
 package redis.embedded;
 
+import org.apache.commons.io.IOUtils;
 import redis.embedded.exceptions.EmbeddedRedisException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.io.IOUtils;
-
 abstract class AbstractRedisInstance implements Redis {
     protected List<String> args = Collections.emptyList();
     private volatile boolean active = false;
 	private Process redisProcess;
     private final int port;
+    private final File logfile;
+
 
     private ExecutorService executor;
 
     protected AbstractRedisInstance(int port) {
         this.port = port;
+        this.logfile = null;
+    }
+    protected AbstractRedisInstance(int port, File logfile) {
+        this.port = port;
+        this.logfile = logfile;
     }
 
     @Override
@@ -52,7 +64,7 @@ abstract class AbstractRedisInstance implements Redis {
     }
 
     private void awaitRedisServerReady() throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(redisProcess.getInputStream()));
+        BufferedReader reader = getBufferedInputStreamReader();
         try {
             String outputLine;
             do {
@@ -64,6 +76,18 @@ abstract class AbstractRedisInstance implements Redis {
             } while (!outputLine.matches(redisReadyPattern()));
         } finally {
             IOUtils.closeQuietly(reader);
+        }
+    }
+
+    private BufferedReader getBufferedInputStreamReader() {
+        if(logfile != null && !logfile.exists()) {
+            try {
+                return new BufferedReader(new FileReader(logfile));
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException("Could not locate Redis logfile: " + logfile.getAbsolutePath());
+            }
+        } else {
+            return new BufferedReader(new InputStreamReader(redisProcess.getInputStream()));
         }
     }
 

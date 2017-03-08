@@ -20,6 +20,7 @@ public class RedisServerBuilder {
     private int port = 6379;
     private InetSocketAddress slaveOf;
     private String redisConf;
+    private File logfile;
 
     private StringBuilder redisConfigBuilder;
 
@@ -65,10 +66,19 @@ public class RedisServerBuilder {
         return this;
     }
 
+    public RedisServerBuilder logfile(File file) throws IOException {
+        this.logfile = file;
+        return setting("logfile " + file.getCanonicalPath());
+    }
+
     public RedisServer build() {
         tryResolveConfAndExec();
         List<String> args = buildCommandArgs();
-        return new RedisServer(args, port);
+        if(logfile != null) {
+            return new RedisServer(args, port, logfile);
+        } else {
+            return new RedisServer(args, port);
+        }
     }
 
     public void reset() {
