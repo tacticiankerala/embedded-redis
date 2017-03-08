@@ -80,7 +80,8 @@ abstract class AbstractRedisInstance implements Redis {
     }
 
     private BufferedReader getBufferedInputStreamReader() {
-        if(logfile != null && !logfile.exists()) {
+        if(logfile != null) {
+            while (!logfile.exists());
             try {
                 return new BufferedReader(new FileReader(logfile));
             } catch (FileNotFoundException e) {
