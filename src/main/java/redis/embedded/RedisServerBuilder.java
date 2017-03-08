@@ -75,9 +75,6 @@ public class RedisServerBuilder {
         tryResolveConfAndExec();
         List<String> args = buildCommandArgs();
         if(logfile != null) {
-            if(logfile.exists()) {
-                logfile.delete();
-            }
             return new RedisServer(args, port, logfile);
         } else {
             return new RedisServer(args, port);

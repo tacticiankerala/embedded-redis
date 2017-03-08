@@ -46,12 +46,19 @@ abstract class AbstractRedisInstance implements Redis {
             throw new EmbeddedRedisException("This redis server instance is already running...");
         }
         try {
+            deleteLogfile();
             redisProcess = createRedisProcessBuilder().start();
             logErrors();
             awaitRedisServerReady();
             active = true;
         } catch (IOException e) {
             throw new EmbeddedRedisException("Failed to start Redis instance", e);
+        }
+    }
+
+    private void deleteLogfile() {
+        if(logfile != null && logfile.exists()) {
+            logfile.delete();
         }
     }
 
