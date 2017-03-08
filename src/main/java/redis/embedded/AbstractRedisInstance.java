@@ -67,6 +67,7 @@ abstract class AbstractRedisInstance implements Redis {
         BufferedReader reader = getBufferedInputStreamReader();
         try {
             String outputLine;
+            while (!reader.ready());
             do {
                 outputLine = reader.readLine();
                 if (outputLine == null) {
@@ -81,7 +82,13 @@ abstract class AbstractRedisInstance implements Redis {
 
     private BufferedReader getBufferedInputStreamReader() {
         if(logfile != null) {
-            while (!logfile.exists());
+            while (!logfile.exists()){
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException("Could not put the thread to sleep.");
+                }
+            }
             try {
                 return new BufferedReader(new FileReader(logfile));
             } catch (FileNotFoundException e) {
